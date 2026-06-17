@@ -7,7 +7,9 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci
+# --legacy-peer-deps: the lockfile was resolved with relaxed peer deps (e.g.
+# ngx-socket-io's peer range lags Angular 19), so strict `npm ci` would ERESOLVE.
+RUN npm ci --legacy-peer-deps
 COPY . .
 RUN npm run build
 
