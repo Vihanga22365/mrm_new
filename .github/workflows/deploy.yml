@@ -45,7 +45,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ vars.SERVER_PORT || 22 }}
-          command_timeout: "30m"
+          command_timeout: "60m"
           envs: OPENAI_API_KEY,TAVILY_API_KEY,DEPLOY_PATH,MRM_HOST_PORT
           script: |
             set -euo pipefail
