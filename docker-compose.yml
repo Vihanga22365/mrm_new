@@ -16,6 +16,11 @@ name: mrm
 networks:
   mrm-net:
     driver: bridge
+  # Shared with the existing rwa app's web container so ITS nginx (which owns
+  # port 80) can proxy /mrm -> this frontend. Create once on the host:
+  #   docker network create shared-edge
+  shared-edge:
+    external: true
 
 services:
   # ---- Angular SPA + nginx (the single public entry point) ----
@@ -31,7 +36,11 @@ services:
     ports:
       - "${MRM_BIND_ADDR:-127.0.0.1}:${MRM_HOST_PORT:-8090}:80"
     networks:
-      - mrm-net
+      mrm-net: {}
+      # Reachable as "mrm-frontend" from the rwa web container on this network.
+      shared-edge:
+        aliases:
+          - mrm-frontend
 
   # ---- deep_agent: MRM Agent Backend (FastAPI :9090) ----
   deep_agent:
