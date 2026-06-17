@@ -1,0 +1,76 @@
+:host {
+  display: block;
+}
+
+section {
+  backdrop-filter: blur(30px);
+}
+
+section::-webkit-scrollbar {
+  display: none;
+}
+
+main.flex {
+  overflow: visible !important;
+}
+
+.relative.max-w-md {
+  overflow: visible !important;
+}
+
+// Allow tooltips to show in committee approval section
+app-committee-approval {
+  overflow: visible !important;
+}
+
+// When committee section is active, allow overflow for tooltips
+.committee-active {
+  overflow: visible !important;
+}
+
+// Modern spinner animations
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-0.5rem);
+  }
+}

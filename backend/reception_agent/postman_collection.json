@@ -1,0 +1,117 @@
+{
+  "info": {
+    "_postman_id": "3a4f76de-9d30-48cd-80da-980fd20428db",
+    "name": "Agentic Backend - Session APIs",
+    "description": "Collection for LangChain/LangGraph session APIs: create session and run agent in session.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"session_id\": \"loan-thread-001\",\n  \"session_variables\": {\n    \"userName\": \"Vihanga\",\n    \"userPosition\": \"software engineer\"\n  }\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions"]
+        },
+        "description": "Creates a new chat session and stores session_id into collection variable sessionId."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "pm.test('Response has session_id', function () {",
+              "  pm.expect(data).to.have.property('session_id');",
+              "  pm.expect(data.session_id).to.be.a('string').and.not.empty;",
+              "});",
+              "",
+              "pm.collectionVariables.set('sessionId', data.session_id);",
+              "console.log('Stored sessionId:', data.session_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Run Agent In Session",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Fetch loan details for loan id 12345 and summarize risk.\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/sessions/{{sessionId}}/run",
+          "host": ["{{baseUrl}}"],
+          "path": ["sessions", "{{sessionId}}", "run"]
+        },
+        "description": "Runs the LangChain agent using the given thread/session context."
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "const data = pm.response.json();",
+              "pm.test('Response has agent output', function () {",
+              "  pm.expect(data).to.have.property('response');",
+              "  pm.expect(data.response).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8350",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+# --- Secrets / runtime env (never commit) ---
+.env
+**/.env
+.env.*
+!.env.example
+
+# --- Python ---
+**/.venv
+__pycache__/
+*.py[cod]
+*.log
+*.egg-info/
+*.egg
+build/
+develop-eggs/
+
+# --- Node / Angular ---
+**/node_modules
+frontend/.angular
+frontend/dist
+dist/
+
+# --- Editor / OS ---
+.vscode/
+.idea/
+.DS_Store
+
+# --- Archives ---
+*.zip

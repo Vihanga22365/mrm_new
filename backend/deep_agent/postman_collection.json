@@ -1,0 +1,254 @@
+{
+  "info": {
+    "_postman_id": "8f56f5b7-4f18-4ab5-a9e9-37c2f7890d9b",
+    "name": "MRM Agent Backend APIs",
+    "description": "Postman collection for all APIs defined in MRM Backend/backend/main.py",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Reports",
+      "item": [
+        {
+          "name": "Serve UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": []
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/report",
+              "host": ["{{base_url}}"],
+              "path": ["report"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Download Report DOCX",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/download-docx",
+              "host": ["{{base_url}}"],
+              "path": ["download-docx"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Generated Content",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/generated-content/{{file_name}}",
+              "host": ["{{base_url}}"],
+              "path": ["generated-content", "{{file_name}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Document Processing",
+      "item": [
+        {
+          "name": "Analyze Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"structure_content\": \"## Chapter 1\\nDescription for chapter 1\\n## Chapter 2\\nDescription for chapter 2\",\n  \"usecase_content\": \"Sample usecase content\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/analyze",
+              "host": ["{{base_url}}"],
+              "path": ["analyze"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Chapter",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chapter\": \"Model Governance\",\n  \"chapter_description\": \"Explain governance controls\",\n  \"instructions\": \"Keep concise and formal\",\n  \"structure_content\": \"## Model Governance\",\n  \"usecase_content\": \"Usecase details here\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/generate",
+              "host": ["{{base_url}}"],
+              "path": ["generate"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review Document",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"document_content\": \"Generated report markdown/text\",\n  \"usecase_content\": \"Usecase context\",\n  \"technical_content\": \"Optional technical context\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/review",
+              "host": ["{{base_url}}"],
+              "path": ["review"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Review Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"comment_text\": \"Please clarify this section\",\n  \"report_text\": \"Relevant report excerpt\",\n  \"additional_instructions\": \"Focus on regulatory language\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/review-comment",
+              "host": ["{{base_url}}"],
+              "path": ["review-comment"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "File Upload APIs",
+      "item": [
+        {
+          "name": "Extract Comments (DOCX)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "{{sample_docx_path}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/extract-comments",
+              "host": ["{{base_url}}"],
+              "path": ["extract-comments"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload Single Document",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "document_name",
+                  "value": "uploaded_document.docx",
+                  "type": "text"
+                },
+                {
+                  "key": "document",
+                  "type": "file",
+                  "src": "{{sample_upload_path}}"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/uplaod_document",
+              "host": ["{{base_url}}"],
+              "path": ["uplaod_document"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:9090"
+    },
+    {
+      "key": "file_name",
+      "value": "final_report.md"
+    },
+    {
+      "key": "sample_docx_path",
+      "value": ""
+    },
+    {
+      "key": "sample_upload_path",
+      "value": ""
+    }
+  ]
+}

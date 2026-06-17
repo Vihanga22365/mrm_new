@@ -1,0 +1,11 @@
+Install UV (pip install uv)
+Install Node (https://nodejs.org/en/download)
+Install Angular (npm install -g @angular/cli@19.2)
+
+
+Go to backend > create virtual environment (`uv venv`) > activate it (`.venv\Scripts\activate`) > install libraries (`uv sync`)
+Go to Frontend > install libraries `npm install`
+
+
+Then run `chmod +x start_services.sh`
+Then run `bash ./start_services.sh` 

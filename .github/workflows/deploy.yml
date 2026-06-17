@@ -1,0 +1,80 @@
+name: Deploy MRM app (Contabo)
+
+# Deploys this app to the Contabo server over SSH and rebuilds the Docker stack.
+# Mirrors the "SSH + docker compose" pattern used by the other apps on the box.
+#
+# Required GitHub repository Secrets:
+#   SERVER_HOST       - server IP/hostname (e.g. 91.230.110.121)
+#   SERVER_USER       - SSH user
+#   SERVER_SSH_KEY    - private SSH key for that user (PEM)
+#   OPENAI_API_KEY    - OpenAI key (used by all 3 backends)
+#   TAVILY_API_KEY    - Tavily key (used by deep_agent web search)
+# Optional repository Variables (Settings -> Variables):
+#   SERVER_PORT       - SSH port (default 22)
+#   DEPLOY_PATH       - checkout dir on the server (default /opt/mrm)
+#   MRM_HOST_PORT     - host port the frontend binds to (default 8090)
+#
+# This workflow assumes the repository ROOT contains docker-compose.yml,
+# frontend/ and backend/ (i.e. the contents of "Full Project"). See DEPLOYMENT.md.
+#
+# One-time server setup:
+#   git clone <this repo> $DEPLOY_PATH   # on the branch you deploy from (main)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-mrm
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ vars.SERVER_PORT || 22 }}
+          command_timeout: "30m"
+          envs: OPENAI_API_KEY,TAVILY_API_KEY,DEPLOY_PATH,MRM_HOST_PORT
+          script: |
+            set -euo pipefail
+            DEPLOY_PATH="${DEPLOY_PATH:-/opt/mrm}"
+            MRM_HOST_PORT="${MRM_HOST_PORT:-8090}"
+
+            echo "==> Updating source in $DEPLOY_PATH"
+            cd "$DEPLOY_PATH"
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            echo "==> Writing .env"
+            umask 077
+            cat > .env <<EOF
+            OPENAI_API_KEY=${OPENAI_API_KEY}
+            TAVILY_API_KEY=${TAVILY_API_KEY}
+            OPENAI_MODEL_NAME=gpt-4.1-mini
+            MRM_BIND_ADDR=127.0.0.1
+            MRM_HOST_PORT=${MRM_HOST_PORT}
+            EOF
+
+            echo "==> Building and starting the stack"
+            docker compose -p mrm up -d --build --remove-orphans
+
+            echo "==> Pruning dangling images"
+            docker image prune -f
+            docker compose -p mrm ps
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
+          MRM_HOST_PORT: ${{ vars.MRM_HOST_PORT }}

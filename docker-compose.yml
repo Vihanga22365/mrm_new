@@ -1,0 +1,107 @@
+# MRM deep-research app — isolated stack for the Contabo server.
+#
+# Design goals:
+#  * Does NOT touch the other app already running on this server. It uses its
+#    own project name ("mrm") + its own bridge network, and publishes ONLY ONE
+#    host port (the frontend). The 3 backends are reachable only on the internal
+#    network, so they cannot collide with any host port the other app uses.
+#  * The whole app is served under /mrm. The server's main nginx forwards
+#    /mrm/ -> this frontend container (see DEPLOYMENT.md for the snippet).
+#
+# Published port: ${MRM_BIND_ADDR:-127.0.0.1}:${MRM_HOST_PORT:-8090} -> frontend:80
+# Bound to 127.0.0.1 by default so only the host's nginx can reach it.
+
+name: mrm
+
+networks:
+  mrm-net:
+    driver: bridge
+
+services:
+  # ---- Angular SPA + nginx (the single public entry point) ----
+  frontend:
+    build:
+      context: ./frontend
+    image: mrm-frontend:latest
+    restart: unless-stopped
+    depends_on:
+      - reception_agent
+      - deep_agent
+      - mcp_server
+    ports:
+      - "${MRM_BIND_ADDR:-127.0.0.1}:${MRM_HOST_PORT:-8090}:80"
+    networks:
+      - mrm-net
+
+  # ---- deep_agent: MRM Agent Backend (FastAPI :9090) ----
+  deep_agent:
+    build:
+      context: ./backend
+      dockerfile: deep_agent/Dockerfile
+    image: mrm-deep-agent:latest
+    restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY:?set OPENAI_API_KEY in .env}"
+      TAVILY_API_KEY: "${TAVILY_API_KEY:-}"
+    expose:
+      - "9090"
+    networks:
+      - mrm-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 9090), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ---- mcp_server: MCP transport (:8351) + WebSocket stream (:8354) ----
+  mcp_server:
+    build:
+      context: ./backend/mcp_server
+    image: mrm-mcp-server:latest
+    restart: unless-stopped
+    depends_on:
+      - deep_agent
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY:?set OPENAI_API_KEY in .env}"
+      # mcp_server tools call deep_agent over the internal network.
+      MRM_BACKEND_URL: "http://deep_agent:9090"
+      BACKEND_HOST: "mcp_server"
+    expose:
+      - "8351"
+      - "8354"
+    networks:
+      - mrm-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8351), 3).close()"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # ---- reception_agent: Agentic Backend (FastAPI :8350) ----
+  reception_agent:
+    build:
+      context: ./backend/reception_agent
+    image: mrm-reception-agent:latest
+    restart: unless-stopped
+    depends_on:
+      mcp_server:
+        condition: service_healthy
+    environment:
+      OPENAI_API_KEY: "${OPENAI_API_KEY:?set OPENAI_API_KEY in .env}"
+      OPENAI_MODEL_NAME: "${OPENAI_MODEL_NAME:-gpt-4.1-mini}"
+      # Reach the MCP server over the internal network instead of localhost.
+      MCP_SERVER_HOST: "mcp_server"
+      MCP_SERVER_PORT: "8351"
+      PORT: "8350"
+    expose:
+      - "8350"
+    networks:
+      - mrm-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; socket.create_connection(('127.0.0.1', 8350), 3).close()"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s

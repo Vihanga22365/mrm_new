@@ -1,0 +1,10 @@
+from .supervisor_prompt import (
+    SUPERVISOR_AGENT_INSTRUCTION,
+    SUPERVISOR_AGENT_DESCRIPTION,
+)
+
+__all__ = [
+    'SUPERVISOR_AGENT_INSTRUCTION',
+    'SUPERVISOR_AGENT_DESCRIPTION',
+]
+

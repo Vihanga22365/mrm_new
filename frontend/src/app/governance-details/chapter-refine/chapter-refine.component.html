@@ -1,0 +1,335 @@
+<section
+  [class.theme-dark]="isDarkTheme"
+  [ngClass]="
+    isDarkTheme
+      ? 'rounded-2xl border border-slate-700 bg-slate-800/80 p-6'
+      : 'rounded-2xl border border-slate-200 bg-white p-6'
+  "
+>
+  <header class="flex items-center gap-3 mb-6">
+    <div
+      [ngClass]="
+        isDarkTheme
+          ? 'h-9 w-9 rounded-lg bg-indigo-500/20 text-indigo-300'
+          : 'h-9 w-9 rounded-lg bg-indigo-100 text-indigo-600'
+      "
+      class="inline-flex items-center justify-center"
+    >
+      <svg
+        class="w-5 h-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      >
+        <path
+          d="M12 3l1.9 3.9L18 8.2l-3 2.9.7 4.1-3.7-1.9L8.3 15.2l.7-4.1-3-2.9 4.1-1.3z"
+        />
+        <path
+          d="M19 15l.9 1.8 1.9.6-1.4 1.3.3 1.9-1.7-.9-1.7.9.3-1.9-1.4-1.3 1.9-.6z"
+        />
+      </svg>
+    </div>
+    <h2
+      [ngClass]="isDarkTheme ? 'text-xl text-white' : 'text-xl text-slate-900'"
+      class="font-semibold"
+    >
+      Select Chapter & Refine
+    </h2>
+  </header>
+
+  <div class="space-y-6">
+    <div class="space-y-2">
+      <label
+        [ngClass]="isDarkTheme ? 'text-slate-200' : 'text-slate-700'"
+        class="block text-sm font-semibold"
+      >
+        Target Chapter
+      </label>
+      <div class="relative">
+        <select
+          [(ngModel)]="selectedChapter"
+          (change)="onChapterChange()"
+          [ngClass]="
+            isDarkTheme
+              ? 'bg-slate-900 border-slate-700 text-white'
+              : 'bg-white border-slate-300 text-slate-900'
+          "
+          class="control-field w-full appearance-none rounded-xl border px-4 py-3 pr-12 text-sm"
+        >
+          <option value="">Select a chapter...</option>
+          <option *ngFor="let option of chapterOptions" [value]="option.name">
+            {{ option.name }}
+          </option>
+        </select>
+        <span
+          [ngClass]="isDarkTheme ? 'text-slate-400' : 'text-slate-500'"
+          class="pointer-events-none absolute inset-y-0 right-4 inline-flex items-center"
+        >
+          <svg
+            class="h-4 w-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </span>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <label
+        [ngClass]="isDarkTheme ? 'text-slate-200' : 'text-slate-700'"
+        class="block text-sm font-semibold"
+      >
+        Chapter Description
+      </label>
+      <textarea
+        rows="6"
+        [(ngModel)]="chapterDescription"
+        [ngClass]="
+          isDarkTheme
+            ? 'bg-slate-900 border-slate-700 text-slate-200 placeholder:text-slate-500'
+            : 'bg-slate-50 border-slate-300 text-slate-700 placeholder:text-slate-400'
+        "
+        placeholder="Describe what this chapter should cover"
+        class="control-field w-full rounded-xl border px-4 py-3 text-sm resize-y focus:outline-none"
+      ></textarea>
+    </div>
+
+    <div class="space-y-2">
+      <label
+        [ngClass]="isDarkTheme ? 'text-slate-200' : 'text-slate-700'"
+        class="block text-sm font-semibold"
+      >
+        Refinement Instructions
+      </label>
+      <textarea
+        rows="7"
+        [(ngModel)]="refinementInstructions"
+        placeholder="e.g., Target a C-level audience, use concise bullet points, and highlight key decisions..."
+        [ngClass]="
+          isDarkTheme
+            ? 'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500'
+            : 'bg-white border-slate-300 text-slate-900 placeholder:text-slate-400'
+        "
+        class="control-field w-full rounded-xl border px-4 py-3 text-sm resize-y"
+      ></textarea>
+    </div>
+
+    <div class="flex justify-end">
+      <button
+        type="button"
+        (click)="generateChapterContent()"
+        [disabled]="!canGenerateChapterContent"
+        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-medium text-sm px-5 py-2.5 transition-all duration-200 hover:shadow-md hover:shadow-blue-500/20 focus:outline-none focus:ring-2 focus:ring-blue-500/35"
+      >
+        <span *ngIf="isGenerating" class="mini-spinner"></span>
+        {{ isGenerating ? "Generating..." : "Generate Chapter Content" }}
+      </button>
+    </div>
+
+    <div
+      *ngIf="generationError"
+      [ngClass]="
+        isDarkTheme
+          ? 'bg-red-500/10 border-red-500/40 text-red-200'
+          : 'bg-red-50 border-red-200 text-red-700'
+      "
+      class="rounded-xl border px-4 py-3 text-sm"
+    >
+      {{ generationError }}
+    </div>
+
+    <section
+      *ngIf="showThinkingSection"
+      #thinkingSectionRef
+      [ngClass]="
+        isDarkTheme
+          ? 'bg-slate-900/70 border-slate-700'
+          : 'bg-slate-50 border-slate-200'
+      "
+      class="rounded-2xl border p-4"
+    >
+      <div class="flex items-center gap-2 mb-3">
+        <span
+          *ngIf="isGenerating || isReviewing"
+          class="mini-spinner text-blue-500"
+        ></span>
+        <span
+          *ngIf="!(isGenerating || isReviewing)"
+          [ngClass]="isDarkTheme ? 'text-emerald-300' : 'text-emerald-600'"
+          class="inline-flex"
+        >
+          <svg
+            class="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+        </span>
+        <h3
+          [ngClass]="isDarkTheme ? 'text-slate-100' : 'text-slate-800'"
+          class="text-sm font-semibold uppercase tracking-wide"
+        >
+          Agent Thinking & Tool Output
+        </h3>
+      </div>
+      <div
+        #thinkingLogContainer
+        [ngClass]="
+          isDarkTheme
+            ? 'bg-slate-950 border-slate-700 text-slate-200'
+            : 'bg-white border-slate-200 text-slate-700'
+        "
+        class="rounded-xl border p-3 max-h-60 overflow-y-auto space-y-2"
+      >
+        <ng-container *ngFor="let log of thinkingLogs">
+          <div
+            *ngIf="isReviewSessionMarker(log); else logLine"
+            [ngClass]="
+              isDarkTheme
+                ? 'review-session-marker review-session-marker--dark'
+                : 'review-session-marker review-session-marker--light'
+            "
+          >
+            <span class="review-session-line"></span>
+            <span class="review-session-label">
+              <svg
+                class="review-session-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+              </svg>
+              Review Session
+            </span>
+            <span class="review-session-line"></span>
+          </div>
+          <ng-template #logLine>
+            <p class="thinking-log-item">{{ log }}</p>
+          </ng-template>
+        </ng-container>
+        <p
+          *ngIf="isGenerating && thinkingLogs.length === 0"
+          [ngClass]="isDarkTheme ? 'text-slate-400' : 'text-slate-500'"
+          class="text-xs"
+        >
+          Waiting for model events...
+        </p>
+      </div>
+    </section>
+
+    <section
+      *ngIf="showOutputSection && generatedContent"
+      #outputSectionRef
+      [ngClass]="
+        isDarkTheme
+          ? 'bg-slate-900/70 border-slate-700'
+          : 'bg-slate-50 border-slate-200'
+      "
+      class="rounded-2xl border p-4"
+    >
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <h3
+          [ngClass]="isDarkTheme ? 'text-slate-100' : 'text-slate-800'"
+          class="text-base font-semibold"
+        >
+          {{ outputTitle }}
+        </h3>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            (click)="copyGeneratedContent()"
+            class="inline-flex items-center gap-1 text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors"
+          >
+            <svg
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+              <path
+                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+              />
+            </svg>
+            Copy
+          </button>
+          <button
+            type="button"
+            (click)="downloadGeneratedContent()"
+            class="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700 transition-colors"
+          >
+            <svg
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <path d="m7 10 5 5 5-5" />
+              <path d="M12 15V3" />
+            </svg>
+            Download
+          </button>
+          <button
+            type="button"
+            (click)="downloadGeneratedWord()"
+            [disabled]="isDownloadingWord"
+            class="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 hover:text-indigo-700 disabled:text-indigo-300 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg
+              class="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              />
+              <path d="M14 2v6h6" />
+              <path d="m9 15 1.5 3L12 15l1.5 3L15 15" />
+            </svg>
+            {{ isDownloadingWord ? "Preparing..." : "Word" }}
+          </button>
+        </div>
+      </div>
+
+      <pre
+        [ngClass]="
+          isDarkTheme
+            ? 'bg-slate-950 border-slate-700 text-slate-100'
+            : 'bg-white border-slate-200 text-slate-700'
+        "
+        class="rounded-xl border p-4 text-sm whitespace-pre-wrap leading-relaxed"
+        >{{ generatedContent }}</pre
+      >
+    </section>
+  </div>
+</section>

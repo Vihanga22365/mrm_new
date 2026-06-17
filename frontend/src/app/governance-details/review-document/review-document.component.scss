@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+.control-field {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgb(99 102 241 / 0.7);
+    box-shadow: 0 0 0 3px rgb(99 102 241 / 0.18);
+  }
+}
+
+.theme-dark .control-field:focus {
+  border-color: rgb(129 140 248 / 0.9);
+  box-shadow: 0 0 0 3px rgb(129 140 248 / 0.22);
+}
+
+:host ::ng-deep .report-highlight {
+  background: rgb(254 240 138);
+  color: rgb(15 23 42);
+  font-weight: 700;
+  padding: 0 0.12rem;
+  border-bottom: 2px solid rgb(250 204 21);
+}
+
+.theme-dark :host ::ng-deep .report-highlight {
+  background: rgb(146 64 14 / 0.5);
+  color: rgb(254 243 199);
+  border-bottom-color: rgb(217 119 6);
+}
+
+.mini-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 9999px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,12 @@
+# Build context for deep_agent is ./backend. Keep it slim: deep_agent only needs
+# the deep_agent/ code and the shared docs/ dir.
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.env
+**/.env.*
+**/*.log
+mcp_server
+reception_agent
+deep_agent/*.ipynb
+deep_agent/postman_collection.json
