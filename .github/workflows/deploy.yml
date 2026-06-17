@@ -67,6 +67,9 @@ jobs:
             MRM_HOST_PORT=${MRM_HOST_PORT}
             EOF
 
+            echo "==> Ensuring the shared-edge network exists (shared with the rwa app)"
+            docker network create shared-edge 2>/dev/null || true
+
             echo "==> Building and starting the stack"
             docker compose -p mrm up -d --build --remove-orphans
 
